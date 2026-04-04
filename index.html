@@ -1,69 +1,89 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Oficina Diesel DF - Atendimento Rápido</title>
-  <meta name="description" content="Oficina diesel em Brasília. Atendimento rápido, diagnóstico completo e orçamento via WhatsApp.">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body { background:#020617; color:#fff; font-family:Arial; }
-    .hero { padding:120px 20px; text-align:center; background:linear-gradient(45deg,#020617,#0f172a); }
-    .btn-main { background:#22c55e; border:none; }
-    .card { background:#0f172a; border:1px solid #1e293b; border-radius:15px; }
-    .form-control { background:#020617; border:1px solid #334155; color:#fff; }
-    .badge-top { background:#22c55e; padding:5px 10px; border-radius:10px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oficina App</title>
+<style>
+body { font-family: Arial; padding:20px; background:#020617; color:white; }
+input, button { width:100%; margin:5px 0; padding:10px; }
+.card { background:#0f172a; padding:10px; margin-top:10px; border-radius:10px; }
+button { cursor:pointer; }
+.delete { background:#ef4444; color:white; border:none; margin-top:10px; }
+/* Força placa em maiúsculo */
+#placa { text-transform: uppercase; }
+</style>
 </head>
 <body>
 
-<section class="hero">
-  <span class="badge-top">ATENDIMENTO IMEDIATO</span>
-  <h1 class="mt-3">Oficina Diesel em Brasília</h1>
-  <p>Seu caminhão com problema? Resolva agora.</p>
-  <a href="#form" class="btn btn-main btn-lg">Solicitar Orçamento no WhatsApp</a>
-</section>
+<h2>Controle de Serviços</h2>
 
-<section class="container my-5">
-  <div class="row text-center">
-    <div class="col-md-4"><div class="card p-4"><h5>Diagnóstico Rápido</h5></div></div>
-    <div class="col-md-4"><div class="card p-4"><h5>Especialistas Diesel</h5></div></div>
-    <div class="col-md-4"><div class="card p-4"><h5>Garantia de Serviço</h5></div></div>
-  </div>
-</section>
+<input id="placa" placeholder="Placa">
+<input id="servico" placeholder="Tipo de serviço">
+<input id="valor" type="number" placeholder="Valor">
+<input id="recebido" type="number" placeholder="Recebido">
 
-<section id="form" class="container my-5">
-  <div class="row justify-content-center">
-    <div class="col-md-5">
-      <div class="card p-4">
-        <h3 class="text-center">Peça seu orçamento</h3>
-        <form id="leadForm">
-          <input type="text" class="form-control my-2" placeholder="Seu nome" required>
-          <input type="tel" class="form-control my-2" placeholder="Seu WhatsApp" required>
-          <textarea class="form-control my-2" placeholder="Qual o problema?" required></textarea>
-          <button class="btn btn-main w-100">Enviar agora</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</section>
+<button onclick="salvar()">Salvar</button>
 
-<footer class="text-center p-4">
-  <p>© 2026 Oficina Diesel DF</p>
-</footer>
+<div id="lista"></div>
 
 <script>
-  document.getElementById('leadForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const nome = this.elements[0].value;
-    const telefone = this.elements[1].value;
-    const mensagem = this.elements[2].value;
+let dados = JSON.parse(localStorage.getItem('dados')) || [];
 
-    const texto = `Olá, meu nome é ${nome}. Meu WhatsApp: ${telefone}. Problema: ${mensagem}`;
-    const url = `https://wa.me/5561995227446?text=${encodeURIComponent(texto)}`;
+function salvar(){
+  let placa = document.getElementById('placa').value.toUpperCase();
+  let servico = document.getElementById('servico').value;
+  let valor = parseFloat(document.getElementById('valor').value);
+  let recebido = parseFloat(document.getElementById('recebido').value);
 
-    window.open(url, '_blank');
+  if(!placa || !servico || isNaN(valor) || isNaN(recebido)){
+    alert("Preencha todos os campos corretamente");
+    return;
+  }
+
+  let falta = valor - recebido;
+
+  let item = {placa, servico, valor, recebido, falta};
+  dados.push(item);
+
+  localStorage.setItem('dados', JSON.stringify(dados));
+
+  limpar();
+  render();
+}
+
+function deletar(index){
+  dados.splice(index,1);
+  localStorage.setItem('dados', JSON.stringify(dados));
+  render();
+}
+
+function limpar(){
+  document.getElementById('placa').value = '';
+  document.getElementById('servico').value = '';
+  document.getElementById('valor').value = '';
+  document.getElementById('recebido').value = '';
+}
+
+function render(){
+  let lista = document.getElementById('lista');
+  lista.innerHTML = '';
+
+  dados.forEach((d, index) => {
+    lista.innerHTML += `
+      <div class="card">
+        🚗 <strong>${d.placa}</strong><br>
+        🔧 ${d.servico}<br>
+        💰 Valor: R$${d.valor}<br>
+        ✔ Recebido: R$${d.recebido}<br>
+        ❌ Falta: R$${d.falta}
+        <button class="delete" onclick="deletar(${index})">Excluir</button>
+      </div>
+    `;
   });
+}
+
+render();
 </script>
 
 </body>
