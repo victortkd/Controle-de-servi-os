@@ -7,11 +7,36 @@
 <style>
 body { font-family: Arial; padding:20px; background:#020617; color:white; }
 input, button { width:100%; margin:5px 0; padding:10px; }
-.card { background:#0f172a; padding:10px; margin-top:10px; border-radius:10px; }
+.card { background:#0f172a; padding:15px; margin-top:10px; border-radius:10px; position:relative; }
 button { cursor:pointer; }
-.delete { background:#ef4444; color:white; border:none; margin-top:10px; }
-/* Força placa em maiúsculo */
 #placa { text-transform: uppercase; }
+
+/* Lixeira */
+.trash {
+  position:absolute;
+  top:10px;
+  right:10px;
+  cursor:pointer;
+  font-size:18px;
+}
+
+/* Filtros */
+.filtros button {
+  width:auto;
+  margin-right:5px;
+  background:#1e293b;
+  color:white;
+  border:none;
+  padding:8px;
+}
+
+/* Totais */
+.total {
+  margin-top:15px;
+  padding:10px;
+  background:#0f172a;
+  border-radius:10px;
+}
 </style>
 </head>
 <body>
@@ -25,10 +50,19 @@ button { cursor:pointer; }
 
 <button onclick="salvar()">Salvar</button>
 
+<div class="filtros">
+  <button onclick="filtroAtual='todos'; render()">Todos</button>
+  <button onclick="filtroAtual='pago'; render()">Pagos</button>
+  <button onclick="filtroAtual='pendente'; render()">Pendentes</button>
+</div>
+
+<div class="total" id="totais"></div>
+
 <div id="lista"></div>
 
 <script>
 let dados = JSON.parse(localStorage.getItem('dados')) || [];
+let filtroAtual = 'todos';
 
 function salvar(){
   let placa = document.getElementById('placa').value.toUpperCase();
@@ -42,8 +76,9 @@ function salvar(){
   }
 
   let falta = valor - recebido;
+  let status = falta <= 0 ? 'pago' : 'pendente';
 
-  let item = {placa, servico, valor, recebido, falta};
+  let item = {placa, servico, valor, recebido, falta, status};
   dados.push(item);
 
   localStorage.setItem('dados', JSON.stringify(dados));
@@ -67,20 +102,40 @@ function limpar(){
 
 function render(){
   let lista = document.getElementById('lista');
+  let totais = document.getElementById('totais');
+
   lista.innerHTML = '';
 
+  let totalValor = 0;
+  let totalRecebido = 0;
+  let totalFalta = 0;
+
   dados.forEach((d, index) => {
+
+    if(filtroAtual !== 'todos' && d.status !== filtroAtual) return;
+
+    totalValor += d.valor;
+    totalRecebido += d.recebido;
+    totalFalta += d.falta;
+
     lista.innerHTML += `
       <div class="card">
+        <div class="trash" onclick="deletar(${index})">🗑️</div>
         🚗 <strong>${d.placa}</strong><br>
         🔧 ${d.servico}<br>
         💰 Valor: R$${d.valor}<br>
         ✔ Recebido: R$${d.recebido}<br>
-        ❌ Falta: R$${d.falta}
-        <button class="delete" onclick="deletar(${index})">Excluir</button>
+        ❌ Falta: R$${d.falta}<br>
+        📊 Status: ${d.status}
       </div>
     `;
   });
+
+  totais.innerHTML = `
+    💰 Total Serviços: R$${totalValor.toFixed(2)}<br>
+    ✔ Total Recebido: R$${totalRecebido.toFixed(2)}<br>
+    ❌ Total Pendente: R$${totalFalta.toFixed(2)}
+  `;
 }
 
 render();
