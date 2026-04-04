@@ -6,12 +6,26 @@
 <title>Oficina App</title>
 <style>
 body { font-family: Arial; padding:20px; background:#020617; color:white; }
-input, button { width:100%; margin:5px 0; padding:10px; }
+
+/* Inputs transparentes com texto branco */
+input {
+  width:100%;
+  margin:5px 0;
+  padding:10px;
+  background: transparent;
+  border:1px solid #334155;
+  color:white;
+}
+
+input::placeholder {
+  color:#94a3b8;
+}
+
+button { width:100%; margin:5px 0; padding:10px; cursor:pointer; }
+
 .card { background:#0f172a; padding:15px; margin-top:10px; border-radius:10px; position:relative; }
-button { cursor:pointer; }
 #placa { text-transform: uppercase; }
 
-/* Lixeira */
 .trash {
   position:absolute;
   top:10px;
@@ -20,7 +34,6 @@ button { cursor:pointer; }
   font-size:18px;
 }
 
-/* Filtros */
 .filtros button {
   width:auto;
   margin-right:5px;
@@ -30,7 +43,6 @@ button { cursor:pointer; }
   padding:8px;
 }
 
-/* Totais */
 .total {
   margin-top:15px;
   padding:10px;
